@@ -91,7 +91,7 @@ object Main extends App {
     else total
   }
 
-  // get loyalty discount
+  // get loyalty discount depending on number of customer stars
   def getLoyaltyDiscount(loyalty: Option[Int]): Double = {
     val stars = loyalty.getOrElse(0)
     val discount = 0.025
@@ -119,10 +119,12 @@ object Main extends App {
 
   // print out bill with formatting
   def printBill(customer: Customer, currency: Currency = GBP): String = {
+    // get relevant currency symbol
     val symbol = currency match
       case EUR => "€"
       case USD => "$"
       case _ => "£"
+    // make string of discount amount
     val discountString =
       customer match {
         case Customer(_, _, None) =>
@@ -133,12 +135,13 @@ object Main extends App {
           val discount = String.format("%,1.2f", convertCurrency((calculateListTotal(removePremiumFromList(customer.receipt)) * getLoyaltyDiscount(customer.loyalty)).doubleValue(), currency))
           s"${customer.loyalty.get} star loyalty discount applied ($symbol$discount)."
       }
+    // make string of tip amount
     val tipString =
       if (checkPremium(customer.receipt)) "Premium service charge applied."
       else if (checkHotFood(customer.receipt)) "Hot food service charge applied."
       else if (checkAnyFood(customer.receipt)) "Food service charge applied."
       else "No service charge."
-
+    // Format the different bill elements + transaction time
     val totalBill = String.format("%,1.2f", convertCurrency(calculateBill(customer).doubleValue(), currency))
     s"\n${customer.name}'s total bill: $symbol$totalBill \n - $discountString\n - $tipString\n - Sale completed: ${LocalTime.now().format(timeFormat)}"
   }
