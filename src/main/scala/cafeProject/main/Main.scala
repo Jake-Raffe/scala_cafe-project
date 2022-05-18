@@ -27,7 +27,7 @@ object Main extends App {
   val bigReceipt = List(coke, coffee, cheeseSandwich, steakSandwich, steakSandwich, steakSandwich, steakSandwich, steakSandwich, steakSandwich,
     steakSandwich, steakSandwich, steakSandwich, steakSandwich, lobster, lobster, lobster, lobster, lobster)
 
-  def checkIfIsHappyHour(time: Int = LocalTime.now().getHour): Boolean = time > 18 && time < 20 // 6-8pm
+  def checkIfIsHappyHour(hourNow: Int = LocalTime.now().getHour): Boolean = hourNow >= 18 && hourNow < 20 // 6-8pm
 
   def checkForAnyFood(items: List[MenuItem]): Boolean = items.exists(_.itemType == Food)
   def checkForHotFood(items: List[MenuItem]): Boolean = items.exists(item => item.temp == Hot && item.itemType == Food)
