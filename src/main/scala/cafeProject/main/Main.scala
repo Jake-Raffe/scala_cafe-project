@@ -1,6 +1,6 @@
 package cafeProject.main
 
-import cafeProject.models.{Drink, Food, Premium, Hot, Cold}
+import cafeProject.models.{Cold, Drink, Food, Hot, Premium}
 import cafeProject.models.Customer
 import cafeProject.models.Currency.{EUR, GBP, USD}
 import cafeProject.models.MenuItem
@@ -27,8 +27,6 @@ object Main extends App {
   val bigReceipt = List(coke, coffee, cheeseSandwich, steakSandwich, steakSandwich, steakSandwich, steakSandwich, steakSandwich, steakSandwich,
     steakSandwich, steakSandwich, steakSandwich, steakSandwich, lobster, lobster, lobster, lobster, lobster)
 
-  def checkIfIsHappyHour(hourNow: Int = LocalTime.now().getHour): Boolean = hourNow >= 18 && hourNow < 20 // 6-8pm
-
   def checkForAnyFood(items: List[MenuItem]): Boolean = items.exists(_.itemType == Food)
   def checkForHotFood(items: List[MenuItem]): Boolean = items.exists(item => item.temp == Hot && item.itemType == Food)
   def checkForPremiumFood(items: List[MenuItem]): Boolean = items.exists(_.itemType == Premium)
@@ -46,14 +44,21 @@ object Main extends App {
   def removePremiumItemsFromList(items: List[MenuItem]): List[MenuItem] = items.filter(_.itemType != Premium)
   def returnPremiumItemsFromList(items: List[MenuItem]): List[MenuItem] = items.filter(_.itemType == Premium)
 
-  def calculateListTotal(items: List[MenuItem]): BigDecimal = {
-    // if is happy hour, drinks are half price
-    def getHappyHourTotal: BigDecimal = {
-      items.filter(_.itemType != Drink).map(_.cost).sum + (0.5 * items.filter(_.itemType == Drink).map(_.cost).sum)
+  def checkIfIsHappyHour(hourNow: Option[Int]): Boolean =
+    hourNow match {
+      case Some(value) => value >= 18 && value < 20 // 6-8pm
+      case None =>
+        val currentHour = LocalTime.now().getHour
+        currentHour >= 18 && currentHour < 20
     }
-
-    if (checkIfIsHappyHour()) getHappyHourTotal else items.map(_.cost).sum
+  def getHappyHourTotal(items: List[MenuItem]): BigDecimal = {
+    items.filter(_.itemType != Drink).map(_.cost).sum + (0.5 * items.filter(_.itemType == Drink).map(_.cost).sum)
   }
+  def calculateListTotal(items: List[MenuItem], overrideHour: Option[Int] = None): BigDecimal = {
+    // if is happy hour, drinks are half price
+    if (checkIfIsHappyHour(overrideHour)) getHappyHourTotal(items) else items.map(_.cost).sum
+  }
+
   def addRelevantTipToTotal(total: BigDecimal, items: List[MenuItem]): BigDecimal = {
     if (checkForPremiumFood(items)) premiumFoodTotalWithTip(total)
     else if (checkForHotFood(items)) hotFoodTotalWithTip(total)
